@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+
+
+body, html{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+.ant-form-item{
+    margin-bottom: 0px !important
+}
+
+.ant-form-item-lable{
+    padding: 5px !important
+}
+
+table{
+    margin-top: 10px;
+    border: 1px solid #bfbfbf;
+}
