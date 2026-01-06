@@ -10,12 +10,22 @@ function ReportCard({
   isAmountProperty: boolean;
 }) {
   return (
-    <div className="bg-gray-100 border border-gray-solid border-gray-300 p-5 shadow-lg rounded flex flex-col gap-3">
-      <h1 className="text-sm font-bold">{title}</h1>
-      <p className="text-sm text-gray-500">{description}</p>
-      <h1 className="text-4xl font-bold mt-2">
+    <div className="q-card p-5 flex flex-col gap-2">
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-sm font-extrabold tracking-tight" style={{ color: "var(--text)" }}>
+          {title}
+        </h3>
+        <div
+          className="h-2 w-2 rounded-full"
+          style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-2))" }}
+        />
+      </div>
+      <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+        {description}
+      </p>
+      <div className="mt-2 text-3xl sm:text-4xl font-black" style={{ color: "var(--text)" }}>
         {isAmountProperty ? `$${value}` : value}
-      </h1>
+      </div>
     </div>
   );
 }
