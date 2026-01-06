@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import { getCurrentUser } from "../api-services/users-service";
 import { message } from "antd";
+import { NavExtensionProvider } from "./nav-extension-context";
 
 function PrivateLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -30,13 +31,34 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
     }
   }, []); 
 
+  if (!showContent || !user) {
+    return null;
+  }
+
+  if (user.isAdmin) {
+    return (
+      <NavExtensionProvider>
+        <div className="min-h-screen lg:flex">
+          <div className="lg:w-72 lg:flex-none">
+            <Sidebar user={user} />
+          </div>
+          <main className="flex-1 min-h-screen overflow-y-auto px-4 py-6 lg:px-8 lg:py-10 q-animate-in scroll">
+            {children}
+          </main>
+        </div>
+      </NavExtensionProvider>
+    );
+  }
+
   return (
-    showContent && user && (
-      <div className="flex lg:flex-row flex-col gap-5 h-screen lg:mr-5">
-        <Sidebar user={user}/>
-        <div className="flex-1 px-2 mx-3 lg:mt-15 pb-10">{children}</div>
+    <NavExtensionProvider>
+      <div className="min-h-screen flex flex-col">
+        <Sidebar user={user} />
+        <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8 lg:py-10 q-animate-in scroll">
+          {children}
+        </main>
       </div>
-    )
+    </NavExtensionProvider>
   );
 }
 
