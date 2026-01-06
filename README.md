@@ -1,2 +1,1 @@
-# Event-Management-System-
-# Event-Management-System-
+#Event Ticketing System
