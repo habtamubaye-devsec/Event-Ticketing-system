@@ -2,6 +2,10 @@ const sendMail = require("../config/send-email");
 const BookingModel = require("../model/bookingModel");
 const EventModel = require("../model/eventsModel");
 const UserModel = require("../model/userModels");
+const {
+  bookingConfirmationTemplate,
+  cancellationTemplate,
+} = require("../utils/email-templates");
 
 const createBooking = async (req, res) => {
   try {
@@ -47,30 +51,20 @@ const createBooking = async (req, res) => {
     if (!event) throw new Error("Event not found");
 
     // Prepare email payload
+    const emailHtml = bookingConfirmationTemplate({
+      userName: userObj.name,
+      eventName: event.name,
+      date: event.date,
+      ticketCount: req.body.ticketCount,
+      location: event.address,
+      url: `${process.env.FRONTEND_URL}/events/${event._id}`,
+    });
+
     const emailPayload = {
       email: userObj.email,
-      subject: "Event Booking Confirmation - SheyEvents",
-      text: `You have successfully booked ${req.body.ticketCount} ticket(s) for ${event.name}`,
-      html: ` <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333; padding: 20px;">
-      <h2 style="color: #E63946;">Booking Confirmation</h2>
-      <p>Hello ${userObj.name || "Valued User"},</p>
-      <p>🎉 You have successfully booked <strong>${
-        req.body.ticketCount
-      }</strong> ticket(s) for the event:</p>
-      <h3 style="color: #1D3557;">${event.name}</h3>
-      <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
-      <p><strong>Location:</strong> ${event.address || "To be announced"}</p>
-
-      <p>Thank you for booking with <strong>SheyEvents</strong>! We look forward to seeing you there.</p>
-
-      <a href="${process.env.FRONTEND_URL}/events/${event._id}" 
-         style="display: inline-block; background-color: #457B9D; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">
-         View Event Details
-      </a>
-
-      <hr style="margin: 20px 0;" />
-      <p style="font-size: 12px; color: #888;">This is an automated message. Please do not reply.</p>
-    </div>`,
+      subject: "Booking Confirmed | Event Ticketing System",
+      text: `Your ${req.body.ticketCount} ticket(s) for ${event.name} are confirmed. Visit ${process.env.FRONTEND_URL}/events/${event._id} for details.`,
+      html: emailHtml,
     };
 
     // Send email
@@ -172,34 +166,21 @@ const cancelBooking = async (req, res) => {
     if (!userObj) throw new Error("User not found");
 
     // Prepare email payload for cancelled booking
+    const cancellationHtml = cancellationTemplate({
+      userName: userObj.name,
+      eventName: event.name,
+      date: event.date,
+      ticketCount: booking.ticketCount,
+      location: event.address,
+      url: `${process.env.FRONTEND_URL}/events`,
+    });
+
     const emailPayload = {
       email: userObj.email,
-      subject: "Booking Cancellation Confirmation - SheyEvents",
-      text: `Your booking of ${booking.ticketCount} ticket(s) for ${event.name} has been successfully cancelled.`,
-      html: `
-    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333; padding: 20px;">
-      <h2 style="color: #E63946;">Booking Cancellation</h2>
-      <p>Hello ${userObj.name || "Valued User"},</p>
-      <p>⚠️ Your booking of <strong>${
-        booking.ticketCount
-      }</strong> ticket(s) for the event below has been successfully cancelled:</p>
-      <h3 style="color: #1D3557;">${event.name}</h3>
-      <p><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
-      <p><strong>Location:</strong> ${event.address || "To be announced"}</p>
-
-      <p>If you have any questions or would like to rebook, please visit our website.</p>
-
-      <a href="${process.env.FRONTEND_URL}/events/${event._id}" 
-         style="display: inline-block; background-color: #E63946; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 10px;">
-         View Event Details
-      </a>
-
-      <hr style="margin: 20px 0;" />
-      <p style="font-size: 12px; color: #888;">This is an automated message. Please do not reply.</p>
-    </div>
-  `,
+      subject: "Booking Cancelled | Event Ticketing System",
+      text: `Your booking of ${booking.ticketCount} ticket(s) for ${event.name} has been cancelled.`,
+      html: cancellationHtml,
     };
-
     // Send email
     await sendMail(emailPayload);
 

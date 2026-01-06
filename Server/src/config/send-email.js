@@ -5,9 +5,9 @@ const sendMail = async ({ email, subject, text, html }) => {
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false, // true for 465, false for other ports
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.NODEMAILER_EMAIL,
         pass: process.env.NODEMAILER_PASSWORD,
