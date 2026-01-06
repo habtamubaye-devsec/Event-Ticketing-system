@@ -5,6 +5,8 @@ import Sidebar from "./sidebar";
 import { getCurrentUser } from "../api-services/users-service";
 import { message } from "antd";
 import { NavExtensionProvider } from "./nav-extension-context";
+import Footer from "../components/ui/Footer";
+import Breadcrumb from "../components/Breadcrumb";
 
 function PrivateLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
@@ -43,6 +45,9 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
             <Sidebar user={user} />
           </div>
           <main className="flex-1 min-h-screen overflow-y-auto px-4 py-6 lg:px-8 lg:py-10 q-animate-in scroll">
+            <div className="mb-6 border-b border-[var(--border)] pb-3">
+              <Breadcrumb />
+            </div>
             {children}
           </main>
         </div>
@@ -57,6 +62,7 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8 lg:py-10 q-animate-in scroll">
           {children}
         </main>
+        <Footer />
       </div>
     </NavExtensionProvider>
   );

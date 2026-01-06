@@ -15,6 +15,9 @@ import AdminBooking from "./pages/private/admin/booking";
 import UsersPage from "./pages/private/admin/user";
 import AdminReport from "./pages/private/admin/reports";
 import UserReportPage from "./pages/private/reports";
+import FAQPage from "./pages/public/faqPage";
+import TermsPage from "./pages/public/termsPage";
+import PrivacyPage from "./pages/public/privacyPage";
 
 
 function App() {
@@ -38,6 +41,12 @@ function App() {
             </PublicLayout>
           }
         />
+
+        <Route path="/faq" element={<FAQPage />} />
+
+        <Route path="/terms" element={<TermsPage />} />
+
+        <Route path="/privacy" element={<PrivacyPage />} />
 
         <Route
           path="/"
