@@ -1,13 +1,14 @@
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react'
 import MenuItems from './menu-items'
 import type { UserType } from '../../interface'
-import { BarChart3, BookOpenCheck, Home, LogOut, Menu, Moon, Sun, User } from 'lucide-react'
+import { BarChart3, BookOpenCheck, Home, LogOut, Menu, Moon, Sun, User, X } from 'lucide-react'
 import { Drawer, message } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useTheme } from '../../theme/theme-context';
 import PageSearch from '../../components/PageSearch';
 import { useNavExtension } from '../nav-extension-context';
+import Breadcrumb from '../../components/Breadcrumb';
 
 function Sidebar({user} : {user:UserType}) {
   const [showMoblieMenu, setShowMobileMenu] = useState(false);
@@ -130,8 +131,8 @@ function Sidebar({user} : {user:UserType}) {
               </button>
             </div>
           </div>
-          <div className="hidden border-t border-[var(--border)] px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-[var(--primary)] md:block">
-            Now viewing: {currentView}
+          <div className="border-t border-[var(--border)] px-4 py-3">
+            <Breadcrumb />
           </div>
         </div>
         <div
@@ -199,10 +200,55 @@ function Sidebar({user} : {user:UserType}) {
 
        {showMoblieMenu &&  (
         <Drawer
-        open={showMoblieMenu}
-        placement='left'
-        onClose={ () => setShowMobileMenu(false)}>
-          <MenuItems user = {user}/>
+          open={showMoblieMenu}
+          placement='left'
+          onClose={ () => setShowMobileMenu(false)}
+          bodyStyle={{ padding: 0, overflow: "hidden" }}
+          width={320}
+          closable={false}
+          style={{ maxWidth: 320 }}
+        >
+          <div
+            className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3"
+            style={{ background: 'var(--surface)' }}
+          >
+            <div>
+              <p className="text-lg font-black" style={{ color: 'var(--text)' }}>
+                Qetero
+                <span
+                  className="ml-2 align-middle text-xs font-bold"
+                  style={{
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, var(--primary), var(--primary-2))',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                  }}
+                >
+                  EVENTS
+                </span>
+              </p>
+              <span className="text-xs uppercase tracking-[0.5em] text-[var(--muted)]">
+                Admin menu
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted)] transition hover:text-[var(--text)]"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+              >
+                {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+              <button
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted)] transition hover:text-[var(--text)]"
+                onClick={() => setShowMobileMenu(false)}
+                aria-label="Close menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          <MenuItems user = {user} showHeader={false}/>
         </Drawer>
        )}
     </div>

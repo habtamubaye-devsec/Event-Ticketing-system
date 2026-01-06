@@ -22,7 +22,7 @@ type MenuItem = {
     isActive?: boolean;
 };
 
-function MenuItems( {user} : {user : UserType}) {  
+function MenuItems( {user, showHeader = true} : {user : UserType, showHeader?: boolean}) {  
 
     const iconSize = 18;
     const location = useLocation();
@@ -123,38 +123,40 @@ function MenuItems( {user} : {user : UserType}) {
             className="h-full w-full p-4 lg:p-5"
             style={{ background: "var(--surface)", borderRight: "1px solid var(--border)" }}
         >
-            <div className="mt-6 flex items-start justify-between gap-3">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-lg font-extrabold tracking-tight" style={{ color: "var(--text)" }}>
-                        Qetero
-                        <span
-                            className="ml-2 align-middle text-xs font-bold"
-                            style={{
-                                color: "white",
-                                background: "linear-gradient(135deg, var(--primary), var(--primary-2))",
-                                padding: "4px 10px",
-                                borderRadius: 999,
-                            }}
-                        >
-                            EVENTS
+            {showHeader && (
+                <div className="mt-6 flex items-start justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-lg font-extrabold tracking-tight" style={{ color: "var(--text)" }}>
+                            Qetero
+                            <span
+                                className="ml-2 align-middle text-xs font-bold"
+                                style={{
+                                    color: "white",
+                                    background: "linear-gradient(135deg, var(--primary), var(--primary-2))",
+                                    padding: "4px 10px",
+                                    borderRadius: 999,
+                                }}
+                            >
+                                EVENTS
+                            </span>
+                        </h1>
+                        <span className="text-sm" style={{ color: "var(--muted)" }}>
+                            {user.name}
                         </span>
-                    </h1>
-                    <span className="text-sm" style={{ color: "var(--muted)" }}>
-                        {user.name}
-                    </span>
-                </div>
+                    </div>
 
-                <button
-                    type="button"
-                    onClick={toggleTheme}
-                    className="q-focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border transition"
-                    style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--muted)" }}
-                    aria-label="Toggle theme"
-                    title="Toggle theme"
-                >
-                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-            </div>
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className="q-focus-ring inline-flex h-10 w-10 items-center justify-center rounded-xl border transition"
+                        style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--muted)" }}
+                        aria-label="Toggle theme"
+                        title="Toggle theme"
+                    >
+                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                </div>
+            )}
 
             <div className="mt-10 flex flex-col gap-2">
                 {menuToRender.map((item) => (

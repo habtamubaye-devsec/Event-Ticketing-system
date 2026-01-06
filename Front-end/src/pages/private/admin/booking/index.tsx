@@ -62,49 +62,40 @@ function AdminBooking() {
 
   const columns = [
     {
-      title: "Event Name",
+      title: "Event / Attendee",
       dataIndex: "event",
       key: "event",
-      responsive: ["sm"],
-      render: (event: unknown) => {
-        const name = (event as { name?: unknown } | null)?.name;
-        return typeof name === "string" ? name : "";
+      render: (event: unknown, record: BookingRow) => {
+        const evt = event as {
+          name?: string;
+          date?: string;
+          time?: string;
+          location?: string;
+          address?: string;
+          city?: string;
+        } | null;
+        const user = record.user as { name?: string } | null;
+        if (!evt) return "";
+        const name = evt.name ?? "Event";
+        const dateTime = getDateTimeFormat(`${evt.date ?? ""} ${evt.time ?? ""}`);
+        const location = evt.location || evt.address || evt.city;
+        return (
+          <div className="space-y-1">
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+              {name}
+            </p>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              {user?.name ? `${user.name} • ` : ""}
+              {dateTime}
+              {location ? ` • ${location}` : ""}
+            </p>
+          </div>
+        );
       },
       sorter: (a: BookingRow, b: BookingRow) => {
         const aName = (a.event as { name?: string } | undefined)?.name ?? "";
         const bName = (b.event as { name?: string } | undefined)?.name ?? "";
         return aName.localeCompare(bName);
-      },
-    },
-    {
-      title: "User",
-      dataIndex: "user",
-      key: "user",
-      responsive: ["md"],
-      render: (user: unknown) => {
-        const name = (user as { name?: unknown } | null)?.name;
-        return typeof name === "string" ? name : "";
-      },
-      sorter: (a: BookingRow, b: BookingRow) => {
-        const aName = (a.user as { name?: string } | undefined)?.name ?? "";
-        const bName = (b.user as { name?: string } | undefined)?.name ?? "";
-        return aName.localeCompare(bName);
-      },
-    },
-    {
-      title: "Date and Time",
-      dataIndex: "event",
-      key: "eventDateTime",
-      render: (event: unknown) => {
-        const evt = event as { date?: unknown; time?: unknown } | null;
-        const date = typeof evt?.date === "string" ? evt.date : "";
-        const time = typeof evt?.time === "string" ? evt.time : "";
-        return getDateTimeFormat(`${date} ${time}`);
-      },
-      sorter: (a: BookingRow, b: BookingRow) => {
-        const aDate = new Date(`${(a.event as { date?: string } | undefined)?.date ?? ""} ${(a.event as { time?: string } | undefined)?.time ?? ""}`).getTime();
-        const bDate = new Date(`${(b.event as { date?: string } | undefined)?.date ?? ""} ${(b.event as { time?: string } | undefined)?.time ?? ""}`).getTime();
-        return aDate - bDate;
       },
     },
     {
@@ -120,18 +111,21 @@ function AdminBooking() {
       title: "Ticket Count",
       dataIndex: "ticketCount",
       key: "ticketCount",
+      responsive: ["md"],
       sorter: (a: BookingRow, b: BookingRow) => (a.ticketCount ?? 0) - (b.ticketCount ?? 0),
     },
     {
       title: "Total Amount",
       dataIndex: "totalAmount",
       key: "totalAmount",
+      responsive: ["lg"],
       sorter: (a: BookingRow, b: BookingRow) =>
         (a.totalAmount ?? 0) - (b.totalAmount ?? 0),
     },
     {
       title: "Booked ON",
       dataIndex: "createdAt",
+      responsive: ["lg"],
       key: "createdAt",
       render: (createdAt: string) => getDateTimeFormat(createdAt),
       sorter: (a: BookingRow, b: BookingRow) => {
@@ -142,6 +136,7 @@ function AdminBooking() {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      responsive: ["sm"],
       render: (status: string) => {
         const isBooked = status === "booked";
         return (
