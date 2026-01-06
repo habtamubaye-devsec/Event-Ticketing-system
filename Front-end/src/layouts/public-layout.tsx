@@ -14,7 +14,7 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  return showContent && <div>{children}</div>;
+  return showContent && <div className="q-animate-in">{children}</div>;
 }
 
 export default PublicLayout;

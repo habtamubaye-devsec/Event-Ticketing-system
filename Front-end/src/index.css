@@ -1,23 +1,271 @@
 @import "tailwindcss";
 
+:root {
+    /* Light mode: milky + slightly creamy (less bright/icy) */
+    --bg: #f3f1ee;
+    --surface: #fbfaf7;
+    --surface-2: #efebe5;
+    --text: #0e1726;
+    --muted: #66707e;
+    --border: #e2ddd6;
+    --ring: rgba(99, 102, 241, 0.35);
 
+    --primary: #6366f1; /* Indigo */
+    --primary-2: #8b5cf6; /* Purple */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
 
-body, html{
+    --radius: 16px;
+    --shadow: 0 10px 26px rgba(11, 18, 32, 0.08);
+    --shadow-hover: 0 16px 40px rgba(11, 18, 32, 0.12);
+}
+
+html[data-theme="dark"] {
+    --bg: #0b1220;
+    --surface: #0f172a;
+    --surface-2: #111c33;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: rgba(148, 163, 184, 0.18);
+    --ring: rgba(167, 139, 250, 0.35);
+
+    --shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 18px 60px rgba(0, 0, 0, 0.45);
+}
+
+html,
+body {
+    height: 100%;
+}
+
+button,
+[role="button"],
+a,
+.q-card {
+    cursor: pointer;
+}
+
+body {
     margin: 0;
     padding: 0;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+        Arial, sans-serif;
+    background:
+        radial-gradient(
+            1200px circle at 18% -12%,
+            rgba(99, 102, 241, 0.06),
+            transparent 55%
+        ),
+        radial-gradient(
+            900px circle at 82% -16%,
+            rgba(139, 92, 246, 0.05),
+            transparent 55%
+        ),
+        var(--bg);
+    color: var(--text);
+}
+
+html[data-theme="dark"] body {
+    background:
+        radial-gradient(
+            1200px circle at 18% -12%,
+            rgba(99, 102, 241, 0.16),
+            transparent 55%
+        ),
+        radial-gradient(
+            900px circle at 82% -16%,
+            rgba(139, 92, 246, 0.12),
+            transparent 55%
+        ),
+        var(--bg);
+}
+
+* {
     box-sizing: border-box;
 }
 
-
-.ant-form-item{
-    margin-bottom: 0px !important
+::selection {
+    background: rgba(99, 102, 241, 0.25);
 }
 
-.ant-form-item-lable{
-    padding: 5px !important
+/* Ant Design spacing tweaks (visual only) */
+.ant-form-item {
+    margin-bottom: 0 !important;
 }
 
-table{
-    margin-top: 10px;
-    border: 1px solid #bfbfbf;
+/* Fixes a typoed selector in the old stylesheet and keeps labels compact */
+.ant-form-item-label {
+    padding-bottom: 6px !important;
+}
+
+/* Table baseline — keep minimal; page components can add wrappers */
+table {
+    border-color: var(--border);
+}
+
+/* Ant Design Table: global dashboard styling */
+.ant-table-wrapper .ant-table {
+    background: transparent;
+    color: var(--text);
+}
+
+.ant-table-wrapper .ant-table-container {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+    background: var(--surface-2) !important;
+    color: var(--text) !important;
+    border-bottom: 1px solid var(--border) !important;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* Remove the small divider line AntD injects between header cells */
+.ant-table-wrapper .ant-table-thead > tr > th::before {
+    background-color: transparent !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+    background: transparent;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+html[data-theme="dark"] .ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+    background: rgba(99, 102, 241, 0.12);
+}
+
+/* Pagination to match theme */
+.ant-pagination .ant-pagination-item a {
+    color: var(--text);
+}
+
+.ant-pagination .ant-pagination-item-active {
+    border-color: var(--primary) !important;
+}
+
+.ant-pagination .ant-pagination-item-active a {
+    color: var(--primary) !important;
+}
+
+.ant-pagination .ant-pagination-prev button,
+.ant-pagination .ant-pagination-next button {
+    color: var(--muted);
+}
+
+/* Utility: consistent card surface (used via className) */
+.q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease;
+}
+
+.q-card:hover {
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+    transform: translateY(-3px) scale(1.005);
+}
+
+.q-card:active {
+    transform: translateY(-1px);
+}
+
+.q-muted {
+    color: var(--muted);
+}
+
+.q-focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
+/* Theme transition (only enabled briefly during toggle)
+   Important: do NOT target `*` (too slow); scope to major surfaces/components. */
+html.q-theme-transition body,
+html.q-theme-transition .q-card,
+html.q-theme-transition .ant-layout,
+html.q-theme-transition .ant-menu,
+html.q-theme-transition .ant-drawer-content,
+html.q-theme-transition .ant-modal-content,
+html.q-theme-transition .ant-table,
+html.q-theme-transition .ant-table-container,
+html.q-theme-transition .ant-table-thead > tr > th,
+html.q-theme-transition .ant-table-tbody > tr > td,
+html.q-theme-transition .ant-btn,
+html.q-theme-transition .ant-input,
+html.q-theme-transition .ant-input-affix-wrapper,
+html.q-theme-transition .ant-select-selector,
+html.q-theme-transition .ant-tag {
+    transition:
+        background-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        fill 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        stroke 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Motion (subtle, dashboard-like). Respects reduced-motion preferences. */
+@keyframes q-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes q-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.q-animate-in {
+    animation: q-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.q-animate-fade {
+    animation: q-fade-in 260ms ease both;
+}
+
+/* Staggered reveal for grids/lists (apply q-stagger to parent, q-stagger-item to children) */
+.q-stagger > .q-stagger-item {
+    animation: q-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--q-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .q-card {
+        transition: none;
+    }
+
+    .q-card:hover,
+    .q-card:active {
+        transform: none;
+    }
+
+    .q-animate-in,
+    .q-animate-fade {
+        animation: none;
+    }
+
+    .q-stagger > .q-stagger-item {
+        animation: none;
+    }
 }
