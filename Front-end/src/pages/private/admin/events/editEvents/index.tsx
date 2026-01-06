@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import PageTitle from "../../../../../components/pageTitle";
 import EventForm from "../common/event-form";
 import { getEventsById } from "../../../../../api-services/events-service";
 import { useParams } from "react-router-dom";
@@ -28,15 +27,16 @@ function EditEventsPage() {
   }, []);
 
   if (loading) {
-    return <Spin tip="Loading event data..." />;
+    return (
+      <div className="q-card p-6 sm:p-8 q-animate-in">
+        <Spin tip="Loading event data..." />
+      </div>
+    );
   }
 
   return (
-    <div className="px-2 ">
-      <PageTitle title="Edit Event" />
-      <div className="mt-10">
-        <EventForm initialData={eventData} type="edit" />
-      </div>
+    <div className="px-2 space-y-6">
+      <EventForm initialData={eventData} type="edit" />
     </div>
   );
 }
