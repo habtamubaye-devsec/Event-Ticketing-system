@@ -54,69 +54,111 @@ function TicketSelection({ eventData }: { eventData: EventType }) {
   }
 
   return (
-    <div>
-      <div className="">
-        <h1 className="text-sm text-red-700 font-bold">Select tickets type</h1>
+    <div className="space-y-5">
+      <div>
+        <h3 className="text-sm font-extrabold" style={{ color: "var(--text)" }}>
+          Select ticket type
+        </h3>
+        <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+          Choose a ticket category, then set quantity.
+        </p>
+      </div>
 
-        <div className="flex gap-2 mt-3">
-          {ticketTypes.map((ticketType, index) => {
-            let available = ticketType.available ? ticketType.available : ticketType.limit;
-            return (
-              <div
-                key={index}
-                className={`p-2 border border-gray-200 bg-gray-100 w-full cursor-pointer rounded
-                    ${
-                      selectedTicketType === ticketType.name
-                        ? "border-gray-800 border-solid border-2 bg-gray-200"
-                        : ""
-                    }`}
-                onClick={() => {
-                  setSelectedTicketType(ticketType.name);
-                  setMaxCount(available);
-                }}
-              >
-                <h1 className="text-sm text-gray-700 uppercase">
-                  {ticketType.name}
-                </h1>
-                <div className="flex justify-between">
-                  <h1 className="text-sm font-bold">$ {ticketType.price}</h1>
-                  <h1 className="text-sm">{ticketType.limit} /{available} left</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {ticketTypes.map((ticketType, index) => {
+          let available = ticketType.available ? ticketType.available : ticketType.limit;
+          const isSelected = selectedTicketType === ticketType.name;
+          const isSoldOut = available <= 0;
+
+          return (
+            <button
+              type="button"
+              key={index}
+              className="q-focus-ring w-full text-left rounded-2xl border p-4 transition"
+              style={{
+                borderColor: "var(--border)",
+                background: isSelected
+                  ? "linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.14))"
+                  : "var(--surface-2)",
+                opacity: isSoldOut ? 0.6 : 1,
+              }}
+              disabled={isSoldOut}
+              onClick={() => {
+                setSelectedTicketType(ticketType.name);
+                setMaxCount(available);
+              }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-xs font-extrabold tracking-wider" style={{ color: "var(--muted)" }}>
+                    {ticketType.name}
+                  </div>
+                  <div className="mt-1 text-lg font-black" style={{ color: "var(--text)" }}>
+                    $ {ticketType.price}
+                  </div>
+                </div>
+                <div
+                  className="rounded-full border px-3 py-1 text-xs font-bold"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "var(--surface)",
+                    color: isSoldOut ? "var(--danger)" : "var(--muted)",
+                  }}
+                >
+                  {isSoldOut ? "Sold out" : `${available} left`}
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        <h1 className="text-sm text-red-700 font-bold mt-10">
-          Select tickets type
-        </h1>
+              <div className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
+                Limit: {ticketType.limit}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
-        <Input
-          type="number"
-          value={selectedTicketCount}
-          style={{ width: "24rem" }}
-          onChange={(e) => setSelectedTicketCount(parseInt(e.target.value))}
-          disabled={!selectedTicketType }
-          max={maxCount}
-          min={0}
-        />
+      <div className="q-card p-4" style={{ background: "var(--surface-2)" }}>
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
+          <div className="flex-1">
+            <div className="text-sm font-extrabold" style={{ color: "var(--text)" }}>
+              Quantity
+            </div>
+            <div className="mt-2">
+              <Input
+                type="number"
+                value={selectedTicketCount}
+                onChange={(e) => setSelectedTicketCount(parseInt(e.target.value))}
+                disabled={!selectedTicketType}
+                max={maxCount}
+                min={0}
+              />
+            </div>
+            <div className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
+              {selectedTicketType
+                ? selectedTicketCount > maxCount
+                  ? `Only ${maxCount} tickets available`
+                  : `Up to ${maxCount} tickets available`
+                : "Select a ticket type to enable quantity"
+              }
+            </div>
+          </div>
 
-        <span className="text-grey-600">
-          {selectedTicketCount > maxCount
-            ? ` Only ${maxCount} tickets available`
-            : ""}
-        </span>
-        <div className="mt-7 flex justify-between bg-gray-200 rounded border border-gray-400 border-solid p-3">
-          <h1 className="text-xs text-gray-500 font-bold">
-            Total Amount: ${totalAmount}
-          </h1>
-          <Button
-            type="primary"
-            disabled={selectedTicketCount > maxCount || !selectedTicketType}
-            onClick={handleBooking}
-          >
-            Book Now
-          </Button>
+          <div className="sm:text-right">
+            <div className="text-xs font-bold" style={{ color: "var(--muted)" }}>
+              Total Amount
+            </div>
+            <div className="mt-1 text-xl font-black" style={{ color: "var(--text)" }}>
+              ${Number.isFinite(totalAmount) ? totalAmount : 0}
+            </div>
+            <Button
+              className="mt-3"
+              type="primary"
+              disabled={selectedTicketCount > maxCount || !selectedTicketType}
+              onClick={handleBooking}
+            >
+              Book Now
+            </Button>
+          </div>
         </div>
       </div>
     </div>

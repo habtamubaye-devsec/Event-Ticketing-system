@@ -32,7 +32,7 @@ export default function PageSearch({
       <button
         type="button"
         onClick={onSearch}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)] text-white transition hover:scale-105"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:scale-105"
         aria-label="Search"
       >
         <Search size={16} />
