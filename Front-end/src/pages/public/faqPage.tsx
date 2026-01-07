@@ -1,5 +1,4 @@
 import PublicContentLayout from "../../layouts/public-content-layout";
-import { Card } from "../../components/ui/Card";
 import { Plus, Minus } from "lucide-react";
 import { useState } from "react";
 
