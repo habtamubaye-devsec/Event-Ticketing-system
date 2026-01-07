@@ -29,9 +29,11 @@ function EventDetail() {
 
   const renderEventProperty = (lable: string, value: any) => {
     return (
-      <div className="flex flex-col text-sm">
-        <span className="text-gray-500">{lable}</span>
-        <span className="text-gray-700 font-semibold">{value}</span>
+      <div className="flex flex-col gap-1 text-sm">
+        <span style={{ color: "var(--muted)" }}>{lable}</span>
+        <span className="font-semibold" style={{ color: "var(--text)" }}>
+          {value}
+        </span>
       </div>
     );
   };
@@ -50,61 +52,85 @@ function EventDetail() {
 
   return (
     eventData && (
-      <div>
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold text-gray-600">{eventData?.name}</h1>
-          <div className="flex gap-10">
-            <div className="flex gap-1 text-gray-500 items-center">
-              <MapPin size={12} />
-              <span className="text-gray-500 text-xs">
-                {eventData?.address} {eventData?.city} {eventData?.pincode}
-              </span>
-            </div>
+      <div className="space-y-5">
+        <div className="q-card p-4 sm:p-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight" style={{ color: "var(--text)" }}>
+              {eventData?.name}
+            </h1>
 
-            <div className="flex gap-1 text-gray-500 items-center">
-              <Timer size={12} />
-              <span className="text-gray-500 text-xs items-center">
-                {getDateTimeFormat(`${eventData?.date} ${eventData?.time}`)}
-              </span>
+            <div className="flex flex-wrap gap-3">
+              <div
+                className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+                style={{ borderColor: "var(--border)", background: "var(--surface-2)", color: "var(--muted)" }}
+              >
+                <MapPin size={14} style={{ color: "var(--primary)" }} />
+                <span>
+                  {eventData?.address} {eventData?.city} {eventData?.pincode}
+                </span>
+              </div>
+
+              <div
+                className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold"
+                style={{ borderColor: "var(--border)", background: "var(--surface-2)", color: "var(--muted)" }}
+              >
+                <Timer size={14} style={{ color: "var(--primary)" }} />
+                <span>{getDateTimeFormat(`${eventData?.date} ${eventData?.time}`)}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-          {eventData?.media.map((media, index) => (
-            <Image
-              src={media}
-              height={220}
-              className="object-cover rounded"
-              key={index}
-            />
-          ))}
-        </div>
-
-        <div className="mt-7">
-          <p className="text-gray-600 text-sm">{eventData?.description}</p>
-        </div>
-
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 p-3 bg-gray-200 mt-7 gap-5">
-          {renderEventProperty("Organizer", eventData?.organizer)}
-          {renderEventProperty("Address", eventData?.address)}
-          {renderEventProperty("City", eventData?.city)}
-          {renderEventProperty("Pincode", eventData?.pincode)}
-          {renderEventProperty("Date", getDateFormat(eventData.date))}
-          {renderEventProperty("Time", eventData?.time)}
-        </div>
-
-        <div className=" bg-gray-200 mt-7 gap-5 p-3">
-          {renderEventProperty(
-            "Guest",
-            eventData?.guest[0] ? eventData?.guest.join(", ") : " no guest"
-          )}
-        </div>
-
-          <div className="mt-3">
-            <TicketSelection eventData={eventData}/>
+        <div className="q-card p-3 sm:p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {eventData?.media.map((media, index) => (
+              <Image
+                src={media}
+                height={220}
+                className="object-cover rounded-2xl"
+                key={index}
+              />
+            ))}
           </div>
-        
+        </div>
+
+        <div className="q-card p-4 sm:p-6">
+          <h2 className="text-base font-extrabold" style={{ color: "var(--text)" }}>
+            About this event
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+            {eventData?.description}
+          </p>
+        </div>
+
+        <div className="q-card p-4 sm:p-6">
+          <h2 className="text-base font-extrabold" style={{ color: "var(--text)" }}>
+            Details
+          </h2>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {renderEventProperty("Organizer", eventData?.organizer)}
+            {renderEventProperty("Address", eventData?.address)}
+            {renderEventProperty("City", eventData?.city)}
+            {renderEventProperty("Pincode", eventData?.pincode)}
+            {renderEventProperty("Date", getDateFormat(eventData.date))}
+            {renderEventProperty("Time", eventData?.time)}
+          </div>
+          <div className="mt-5">
+            {renderEventProperty(
+              "Guests",
+              eventData?.guest[0] ? eventData?.guest.join(", ") : "No guest"
+            )}
+          </div>
+        </div>
+
+        <div className="q-card p-4 sm:p-6">
+          <h2 className="text-base font-extrabold" style={{ color: "var(--text)" }}>
+            Tickets
+          </h2>
+          <div className="mt-4">
+            <TicketSelection eventData={eventData} />
+          </div>
+        </div>
       </div>
     )
   );
