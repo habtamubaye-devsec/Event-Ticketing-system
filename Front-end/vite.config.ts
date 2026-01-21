@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [ tailwindcss(), react()],
   server : {
     proxy: {
-      "/api": "http://localhost:5001",
+      "/api": "https://event-ticketing-system-backend-api.vercel.app",
     }
   }
 })
