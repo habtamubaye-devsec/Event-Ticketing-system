@@ -5,9 +5,11 @@ import { Button, message, Table, Tag } from "antd";
 import {
   cancelBookings,
   // deleteBookings,
+  getBookingQr,
   getUserBooking,
 } from "../../../api-services/booking-service";
 import { getDateTimeFormat } from "../../../helper";
+import QrCodeModal from "../../../components/QrCodeModal";
 // import { Trash } from "lucide-react";
 
 type BookingRow = BookingType & {
@@ -33,6 +35,8 @@ function getErrorMessage(error: unknown): string {
 function UserBooking() {
   const [bookings, setBooking] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [activeQrCode, setActiveQrCode] = useState<string | null>(null);
 
   const getData = async () => {
     try {
@@ -52,6 +56,31 @@ function UserBooking() {
       await cancelBookings(id);
       message.success("Booking canceled successfully");
       getData(); // Refresh table
+    } catch (error: unknown) {
+      message.error(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleShowQr = async (record: BookingRow) => {
+    try {
+      const existing = record.qrCode;
+      if (existing) {
+        setActiveQrCode(existing);
+        setQrOpen(true);
+        return;
+      }
+
+      setLoading(true);
+      const response = await getBookingQr(record._id);
+      const code = response?.data?.qrCode as string | undefined;
+      if (!code) {
+        message.error("QR code not available");
+        return;
+      }
+      setActiveQrCode(code);
+      setQrOpen(true);
     } catch (error: unknown) {
       message.error(getErrorMessage(error));
     } finally {
@@ -179,17 +208,24 @@ function UserBooking() {
       title: "Action",
       key: "action",
       render: (_value: unknown, record: BookingRow) => {
-        return record.status === "booked" ? (
-          <Button
-            type="link"
-            danger
-            size="small"
-            onClick={() => handleCancel(record._id)}
-          >
-            Cancel
-          </Button>
-        ) : (
-          <span className="text-[var(--muted)] text-sm">Canceled</span>
+        return (
+          <div className="flex items-center gap-2">
+            <Button size="small" onClick={() => handleShowQr(record)}>
+              View QR
+            </Button>
+            {record.status === "booked" ? (
+              <Button
+                type="link"
+                danger
+                size="small"
+                onClick={() => handleCancel(record._id)}
+              >
+                Cancel
+              </Button>
+            ) : (
+              <span className="text-[var(--muted)] text-sm">Canceled</span>
+            )}
+          </div>
         );
         
         // (
@@ -215,6 +251,14 @@ function UserBooking() {
           pagination={false}
         />
       </div>
+
+      {activeQrCode ? (
+        <QrCodeModal
+          open={qrOpen}
+          onClose={() => setQrOpen(false)}
+          code={activeQrCode}
+        />
+      ) : null}
     </div>
   );
 }

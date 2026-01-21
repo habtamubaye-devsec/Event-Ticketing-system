@@ -60,6 +60,7 @@ const wrapTemplate = ({
   title,
   subtitle,
   details,
+  extraHtml,
   button,
   footerNote,
 }) => `
@@ -142,6 +143,7 @@ const wrapTemplate = ({
                 <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="border-collapse: collapse;">
                   ${createDetailsRows(details)}
                 </table>
+                ${extraHtml || ""}
                 ${renderButton(button)}
                 <p style="margin-top: 30px; font-size: 12px; color: #94a3b8;">
                   ${footerNote ||
@@ -178,6 +180,8 @@ const bookingConfirmationTemplate = ({
   ticketCount,
   location,
   url,
+  qrCid,
+  qrCode,
 }) =>
   wrapTemplate({
     preheader: `Booking confirmed for ${eventName}`,
@@ -193,6 +197,22 @@ const bookingConfirmationTemplate = ({
       text: "View event details",
       url,
     },
+    extraHtml:
+      qrCid && qrCode
+        ? `
+          <div style="margin-top: 22px; padding: 18px; border-radius: 16px; background: #f8fafc; border: 1px solid #e5e7eb;">
+            <p style="margin: 0 0 10px; font-size: 14px; font-weight: 700; color: ${BRAND.dark};">Your QR Ticket</p>
+            <p style="margin: 0 0 14px; font-size: 13px; color: #47535c;">Show this QR at the entrance for quick check-in.</p>
+            <div style="display:flex; align-items:center; gap: 16px;">
+              <img src="cid:${qrCid}" alt="QR Ticket" width="140" height="140" style="border-radius: 12px; border: 1px solid #e5e7eb; background: #fff;" />
+              <div>
+                <p style="margin: 0; font-size: 12px; color: #64748B;">Booking Code</p>
+                <p style="margin: 4px 0 0; font-size: 16px; font-weight: 800; letter-spacing: 0.08em; color: ${BRAND.dark};">${qrCode}</p>
+              </div>
+            </div>
+          </div>
+        `
+        : "",
     footerNote: `Thanks for choosing ${BRAND.name}. We'll ping you with reminders before the show.`,
   });
 

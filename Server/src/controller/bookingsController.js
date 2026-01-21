@@ -2,14 +2,42 @@ const sendMail = require("../config/send-email");
 const BookingModel = require("../model/bookingModel");
 const EventModel = require("../model/eventsModel");
 const UserModel = require("../model/userModels");
+const crypto = require("crypto");
+const QRCode = require("qrcode");
 const {
   bookingConfirmationTemplate,
   cancellationTemplate,
 } = require("../utils/email-templates");
 
+const generateBookingCode = () => {
+  // 12-char URL-safe-ish code (uppercase + digits)
+  return crypto
+    .randomBytes(9)
+    .toString("base64")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(0, 12)
+    .toUpperCase();
+};
+
+const getUniqueBookingCode = async () => {
+  // retry loop to avoid rare collisions
+  for (let i = 0; i < 5; i++) {
+    const code = generateBookingCode();
+    const exists = await BookingModel.exists({ qrCode: code });
+    if (!exists) return code;
+  }
+  // fallback with timestamp
+  return `BK${Date.now().toString(36).toUpperCase()}`;
+};
+
 const createBooking = async (req, res) => {
   try {
     req.body.user = req.user._id;
+
+    // Ensure a unique booking qrCode exists
+    if (!req.body.qrCode) {
+      req.body.qrCode = await getUniqueBookingCode();
+    }
 
     // Create booking
     const booking = await BookingModel.create(req.body);
@@ -51,6 +79,13 @@ const createBooking = async (req, res) => {
     if (!event) throw new Error("Event not found");
 
     // Prepare email payload
+    const qrPngBuffer = await QRCode.toBuffer(req.body.qrCode, {
+      type: "png",
+      errorCorrectionLevel: "M",
+      margin: 2,
+      scale: 8,
+    });
+
     const emailHtml = bookingConfirmationTemplate({
       userName: userObj.name,
       eventName: event.name,
@@ -58,6 +93,8 @@ const createBooking = async (req, res) => {
       ticketCount: req.body.ticketCount,
       location: event.address,
       url: `${process.env.FRONTEND_URL}/events/${event._id}`,
+      qrCid: "ticket-qr",
+      qrCode: req.body.qrCode,
     });
 
     const emailPayload = {
@@ -65,6 +102,14 @@ const createBooking = async (req, res) => {
       subject: "Booking Confirmed | Event Ticketing System",
       text: `Your ${req.body.ticketCount} ticket(s) for ${event.name} are confirmed. Visit ${process.env.FRONTEND_URL}/events/${event._id} for details.`,
       html: emailHtml,
+      attachments: [
+        {
+          filename: `ticket-${req.body.qrCode}.png`,
+          content: qrPngBuffer,
+          cid: "ticket-qr",
+          contentType: "image/png",
+        },
+      ],
     };
 
     // Send email

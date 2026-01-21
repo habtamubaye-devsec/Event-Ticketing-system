@@ -15,6 +15,7 @@ import AdminBooking from "./pages/private/admin/booking";
 import UsersPage from "./pages/private/admin/user";
 import AdminReport from "./pages/private/admin/reports";
 import UserReportPage from "./pages/private/reports";
+import AdminQrCheckin from "./pages/private/admin/qr-checkin";
 import FAQPage from "./pages/public/faqPage";
 import TermsPage from "./pages/public/termsPage";
 import PrivacyPage from "./pages/public/privacyPage";
@@ -143,6 +144,15 @@ function App() {
           element={
             <PrivateLayout>
               <EditEventsPage />
+            </PrivateLayout>
+          }
+        />
+
+        <Route
+          path="/admin/qr-checkin"
+          element={
+            <PrivateLayout>
+              <AdminQrCheckin />
             </PrivateLayout>
           }
         />

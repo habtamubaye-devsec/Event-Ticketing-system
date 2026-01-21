@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const boookingSchema = new mongoose.Schema({
+  qrCode: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+  },
   event: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Events",
@@ -27,7 +33,18 @@ const boookingSchema = new mongoose.Schema({
     type: String,
     required: true,
     default: "booked"
-  }
+  },
+  checkedIn: {
+    type: Boolean,
+    default: false,
+  },
+  checkedInAt: {
+    type: Date,
+  },
+  checkedInBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
 }, {timestamps: true});
 
 

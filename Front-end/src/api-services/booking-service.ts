@@ -26,3 +26,19 @@ export const getAllBooking = async () => {
   const response = await api.get("/booking/get-all-booking");
   return response.data; 
 };
+
+export const getBookingQr = async (bookingId: string) => {
+  const response = await api.get(`/booking/${bookingId}/qr`);
+  return response.data;
+};
+
+// Admin
+export const verifyBookingByQr = async (code: string) => {
+  const response = await api.get(`/booking/qr/verify/${encodeURIComponent(code)}`);
+  return response.data;
+};
+
+export const checkInBookingByQr = async (code: string) => {
+  const response = await api.post(`/booking/qr/check-in/${encodeURIComponent(code)}`);
+  return response.data;
+};

@@ -31,7 +31,12 @@ export interface BookingType {
   _id: string;
   user: UserType;
   event: EventType;
-  quantity: number;
+  ticketType?: string;
+  ticketCount?: number;
+  status?: string;
+  qrCode?: string;
+  checkedIn?: boolean;
+  checkedInAt?: string;
   totalAmount: number;
   createdAt: string;
 }

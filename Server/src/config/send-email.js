@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
 // Create a test account or replace with real credentials.
-const sendMail = async ({ email, subject, text, html }) => {
+const sendMail = async ({ email, subject, text, html, attachments }) => {
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -20,6 +20,7 @@ const sendMail = async ({ email, subject, text, html }) => {
       subject,
       text,
       html,
+      attachments,
     };
     await transporter.sendMail(mailOptions);
 

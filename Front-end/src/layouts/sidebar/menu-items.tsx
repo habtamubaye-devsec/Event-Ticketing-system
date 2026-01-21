@@ -5,6 +5,7 @@ import {
     List,
     LogOut,
     Moon,
+    QrCode,
     Sun,
     User,
     UserRound,
@@ -88,6 +89,12 @@ function MenuItems( {user, showHeader = true} : {user : UserType, showHeader?: b
             icon: <BookCheck
                 size={iconSize}/>,
             isActive: currentPath.includes("/admin/bookings"),
+        },
+        {
+            name: "QR Check-in",
+            path: "/admin/qr-checkin",
+            icon: <QrCode size={iconSize} />,
+            isActive: currentPath.includes("/admin/qr-checkin"),
         },
         {
             name: "Users",
