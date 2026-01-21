@@ -18,8 +18,9 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
       const response = await getCurrentUser();
       setUser(response.data);
     } catch (error:any) {
-      message.error(error.response.data.message || error.message);
-      console.log(error.response.data.message || error.message);
+      const msg = error?.response?.data?.message || error?.message || "Request failed";
+      message.error(msg);
+      console.log(msg);
     }
   }
 

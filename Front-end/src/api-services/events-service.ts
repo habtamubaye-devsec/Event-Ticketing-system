@@ -1,8 +1,9 @@
 import axios from "axios";
+import api from "./api";
 
 export const createEvent = async (data: any) => {
   try {
-    const response = await axios.post("/api/events/create-event", data);
+    const response = await api.post("/events/create-event", data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -15,12 +16,14 @@ export const createEvent = async (data: any) => {
 };
  
 export const getEvents = async ( filters: any) => {
-  const response = await axios.get(`/api/events/get-event?searchText=${filters.searchText}&date=${filters.date}`);
+  const response = await api.get(
+    `/events/get-event?searchText=${filters.searchText}&date=${filters.date}`
+  );
   return response.data; 
 }
  // get events for report filter
 export const getEventsFilters = async (filters: any) => {
-  const response = await axios.get("/api/events/get-event", {
+  const response = await api.get("/events/get-event", {
     params: {
       searchText: filters.searchText || "",
       startDate: filters.startDate || "",
@@ -32,16 +35,16 @@ export const getEventsFilters = async (filters: any) => {
 };
 
 export const getEventsById = async ( id: string) => {
-  const response = await axios.get(`/api/events/get-event/${id}`);
+  const response = await api.get(`/events/get-event/${id}`);
   return response.data;
 }
 
 export const updateEvent = async ( data: any, id: string) => {
-  const response = await axios.put(`/api/events/update-event/${id}`, data);
+  const response = await api.put(`/events/update-event/${id}`, data);
   return response.data;
 }
 
 export const deleteEvents = async (data: any, id: string) => {
-  const response = await axios.delete(`/api/events/delete-event/${id}`, data);
+  const response = await api.delete(`/events/delete-event/${id}`, { data });
   return response.data;
 }
