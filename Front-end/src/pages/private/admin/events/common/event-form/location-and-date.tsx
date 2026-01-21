@@ -8,7 +8,7 @@ function LocationAndDate({
   setEventData,
 }: EventFormsStepProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div className="flex flex-col sm:grid grid-cols-1 lg:grid-cols-3 gap-5">
       <Form.Item label="Address" required>
         <Input
           placeholder="Address"
