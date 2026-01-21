@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, message, Modal, Tag } from "antd";
+import { Button, message, Modal, Select, Tag } from "antd";
 import { Html5Qrcode } from "html5-qrcode";
 import PageTitle from "../../../../components/pageTitle";
 import { checkInBookingByQr, verifyBookingByQr } from "../../../../api-services/booking-service";
+import { getEvents } from "../../../../api-services/events-service";
+import type { EventType } from "../../../../interface";
 
 type VerifyData = {
   _id: string;
@@ -13,16 +15,52 @@ type VerifyData = {
   ticketType?: string;
   ticketCount?: number;
   user?: { name?: string; email?: string };
-  event?: { name?: string; date?: string; time?: string; address?: string; city?: string };
+  event?: { _id?: string; name?: string; date?: string; time?: string; address?: string; city?: string };
 };
+
+function parseLocalDate(dateText?: string) {
+  if (!dateText || typeof dateText !== "string") return null;
+  const parts = dateText.split("-").map((value) => Number(value));
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null;
+  const [year, month, day] = parts;
+  return new Date(year, month - 1, day);
+}
+
+function isUpcomingEvent(event: Pick<EventType, "date">) {
+  const eventDate = parseLocalDate(event.date);
+  if (!eventDate) return true;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return eventDate.getTime() >= today.getTime();
+}
 
 function AdminQrCheckin() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [activeCode, setActiveCode] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [verifyResult, setVerifyResult] = useState<VerifyData | null>(null);
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
 
   const scannerRegionId = useMemo(() => "qr-scanner-region", []);
+
+  const upcomingEvents = useMemo(
+    () => events.filter((evt) => isUpcomingEvent(evt)),
+    [events]
+  );
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const resp = await getEvents({ searchText: "", date: "" });
+        const list = (resp?.data as EventType[] | undefined) ?? [];
+        setEvents(list);
+      } catch (e: any) {
+        message.error(e?.response?.data?.message || e?.message || "Unable to load events");
+      }
+    };
+    loadEvents();
+  }, []);
 
   useEffect(() => {
     if (!scannerOpen) return;
@@ -61,13 +99,17 @@ function AdminQrCheckin() {
   }, [scannerOpen, scannerRegionId]);
 
   const onVerify = async () => {
+    if (!selectedEventId) {
+      message.warning("Select an event first");
+      return;
+    }
     if (!activeCode.trim()) {
       message.warning("Scan or paste a QR code first");
       return;
     }
     try {
       setLoading(true);
-      const resp = await verifyBookingByQr(activeCode.trim());
+      const resp = await verifyBookingByQr(activeCode.trim(), selectedEventId);
       setVerifyResult(resp.data);
       message.success("Booking verified");
     } catch (e: any) {
@@ -79,10 +121,14 @@ function AdminQrCheckin() {
   };
 
   const onCheckIn = async () => {
+    if (!selectedEventId) {
+      message.warning("Select an event first");
+      return;
+    }
     if (!activeCode.trim()) return;
     try {
       setLoading(true);
-      await checkInBookingByQr(activeCode.trim());
+      await checkInBookingByQr(activeCode.trim(), selectedEventId);
       message.success("Checked in successfully");
       await onVerify();
     } catch (e: any) {
@@ -98,6 +144,29 @@ function AdminQrCheckin() {
 
       <div className="q-card p-5 space-y-4">
         <div className="flex flex-wrap items-center gap-3">
+          <div className="min-w-[260px] flex-1">
+            <Select
+              value={selectedEventId || undefined}
+              onChange={(value) => {
+                setSelectedEventId(value);
+                setVerifyResult(null);
+              }}
+              placeholder="Select event for check-in"
+              className="w-full"
+              options={upcomingEvents.map((evt) => ({
+                label: `${evt.name} • ${evt.date}${evt.time ? ` ${evt.time}` : ""}`,
+                value: evt._id,
+              }))}
+              showSearch
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                (option?.label as string | undefined)?.toLowerCase().includes(input.toLowerCase()) ?? false
+              }
+            />
+            <p className="mt-1 text-[0.65rem] uppercase tracking-[0.35em] text-[var(--muted)]">
+              Only upcoming events are shown
+            </p>
+          </div>
           <Button type="primary" onClick={() => setScannerOpen(true)}>
             Scan QR
           </Button>
@@ -111,7 +180,11 @@ function AdminQrCheckin() {
           <Button onClick={onVerify} loading={loading}>
             Verify
           </Button>
-          <Button onClick={onCheckIn} loading={loading} disabled={!verifyResult || verifyResult.checkedIn || verifyResult.status !== "booked"}>
+          <Button
+            onClick={onCheckIn}
+            loading={loading}
+            disabled={!verifyResult || verifyResult.checkedIn || verifyResult.status !== "booked" || !selectedEventId}
+          >
             Check-in
           </Button>
         </div>

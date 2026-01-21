@@ -33,12 +33,14 @@ export const getBookingQr = async (bookingId: string) => {
 };
 
 // Admin
-export const verifyBookingByQr = async (code: string) => {
-  const response = await api.get(`/booking/qr/verify/${encodeURIComponent(code)}`);
+export const verifyBookingByQr = async (code: string, eventId?: string) => {
+  const response = await api.get(`/booking/qr/verify/${encodeURIComponent(code)}`, {
+    params: eventId ? { eventId } : undefined,
+  });
   return response.data;
 };
 
-export const checkInBookingByQr = async (code: string) => {
-  const response = await api.post(`/booking/qr/check-in/${encodeURIComponent(code)}`);
+export const checkInBookingByQr = async (code: string, eventId?: string) => {
+  const response = await api.post(`/booking/qr/check-in/${encodeURIComponent(code)}`, eventId ? { eventId } : undefined);
   return response.data;
 };

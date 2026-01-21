@@ -24,12 +24,17 @@ router.get("/get-all-booking", validateToken, getAllBooking);
 router.get("/qr/verify/:code", validateToken, requireAdmin, async (req, res) => {
   try {
     const { code } = req.params;
+    const { eventId } = req.query;
     const booking = await BookingModel.findOne({ qrCode: code })
       .populate("user")
       .populate("event");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (eventId && String(booking.event?._id) !== String(eventId)) {
+      return res.status(400).json({ message: "Ticket is not for the selected event" });
     }
 
     return res.status(200).json({
@@ -55,9 +60,14 @@ router.get("/qr/verify/:code", validateToken, requireAdmin, async (req, res) => 
 router.post("/qr/check-in/:code", validateToken, requireAdmin, async (req, res) => {
   try {
     const { code } = req.params;
+    const { eventId } = req.body || {};
     const booking = await BookingModel.findOne({ qrCode: code });
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (eventId && String(booking.event) !== String(eventId)) {
+      return res.status(400).json({ message: "Ticket is not for the selected event" });
     }
 
     if (booking.status !== "booked") {
@@ -71,6 +81,7 @@ router.post("/qr/check-in/:code", validateToken, requireAdmin, async (req, res) 
     booking.checkedIn = true;
     booking.checkedInAt = new Date();
     booking.checkedInBy = req.user._id;
+    booking.status = "checked-in";
     await booking.save();
 
     return res.status(200).json({ message: "Check-in successful", data: booking });

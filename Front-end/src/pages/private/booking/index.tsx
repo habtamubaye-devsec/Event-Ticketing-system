@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageTitle from "../../../components/pageTitle";
 import type { BookingType } from "../../../interface";
-import { Button, message, Table, Tag } from "antd";
+import { Button, message, Table, Tabs, Tag } from "antd";
 import {
   cancelBookings,
   // deleteBookings,
@@ -37,6 +37,16 @@ function UserBooking() {
   const [loading, setLoading] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [activeQrCode, setActiveQrCode] = useState<string | null>(null);
+
+  const uncheckedBookings = useMemo(
+    () => bookings.filter((booking) => !booking.checkedIn),
+    [bookings]
+  );
+
+  const checkedInBookings = useMemo(
+    () => bookings.filter((booking) => Boolean(booking.checkedIn)),
+    [bookings]
+  );
 
   const getData = async () => {
     try {
@@ -184,11 +194,15 @@ function UserBooking() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const isBooked = status === "booked";
+      render: (status: string, record: BookingRow) => {
+        const normalizedStatus = record.checkedIn ? "checked-in" : status;
+        const isBooked = normalizedStatus === "booked";
+        const isCheckedIn = normalizedStatus === "checked-in";
+        const isCanceled = normalizedStatus === "canceled";
+        const color = isCheckedIn ? "processing" : isBooked ? "success" : isCanceled ? "default" : "default";
         return (
-          <Tag color={isBooked ? "success" : "default"}>
-            {status.toUpperCase()}
+          <Tag color={color}>
+            {(normalizedStatus || "unknown").toUpperCase()}
           </Tag>
         );
       },
@@ -208,12 +222,14 @@ function UserBooking() {
       title: "Action",
       key: "action",
       render: (_value: unknown, record: BookingRow) => {
+        const isCheckedIn = Boolean(record.checkedIn) || record.status === "checked-in";
+        const canCancel = record.status === "booked" && !isCheckedIn;
         return (
           <div className="flex items-center gap-2">
             <Button size="small" onClick={() => handleShowQr(record)}>
               View QR
             </Button>
-            {record.status === "booked" ? (
+            {canCancel ? (
               <Button
                 type="link"
                 danger
@@ -222,6 +238,8 @@ function UserBooking() {
               >
                 Cancel
               </Button>
+            ) : isCheckedIn ? (
+              <span className="text-[var(--muted)] text-sm">Checked in</span>
             ) : (
               <span className="text-[var(--muted)] text-sm">Canceled</span>
             )}
@@ -243,12 +261,36 @@ function UserBooking() {
       <PageTitle title="Bookings" />
 
       <div className="q-card">
-        <Table
-          dataSource={bookings}
-          columns={columns}
-          loading={loading}
-          rowKey="_id"
-          pagination={false}
+        <Tabs
+          defaultActiveKey="unchecked"
+          items={[
+            {
+              key: "unchecked",
+              label: `Unchecked Tickets (${uncheckedBookings.length})`,
+              children: (
+                <Table
+                  dataSource={uncheckedBookings}
+                  columns={columns}
+                  loading={loading}
+                  rowKey="_id"
+                  pagination={false}
+                />
+              ),
+            },
+            {
+              key: "checked",
+              label: `Checked-in Tickets (${checkedInBookings.length})`,
+              children: (
+                <Table
+                  dataSource={checkedInBookings}
+                  columns={columns}
+                  loading={loading}
+                  rowKey="_id"
+                  pagination={false}
+                />
+              ),
+            },
+          ]}
         />
       </div>
 

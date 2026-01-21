@@ -177,6 +177,16 @@ const cancelBooking = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
+    const isOwner = String(booking.user) === String(req.user?._id);
+    if (!isOwner && !req.user?.isAdmin) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    // Block cancellation if ticket has been checked-in (one-time use)
+    if (booking.checkedIn || booking.status === "checked-in") {
+      return res.status(400).json({ message: "Cannot cancel after check-in" });
+    }
+
     // 2. Check if already canceled
     if (booking.status === "canceled") {
       return res.status(400).json({ message: "Booking is already canceled" });

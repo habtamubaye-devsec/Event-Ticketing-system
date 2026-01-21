@@ -57,7 +57,8 @@ function AdminBooking() {
 
   const statusFilters = [
     { text: "Booked", value: "booked" },
-    { text: "Cancelled", value: "cancelled" },
+    { text: "Checked-in", value: "checked-in" },
+    { text: "Canceled", value: "canceled" },
   ];
 
   const columns = [
