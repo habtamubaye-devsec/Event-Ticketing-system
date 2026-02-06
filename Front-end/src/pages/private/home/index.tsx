@@ -47,6 +47,19 @@ function Home() {
     }
   }, []);
 
+  // Filter to show only upcoming events
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+
+    return events.filter((event) => {
+      // Combine event date and time into a single Date object
+      const eventDateTime = new Date(`${event.date}T${event.time}`);
+
+      // Return true only if the event is in the future
+      return eventDateTime > now;
+    });
+  }, [events]);
+
   const handleHeaderSearch = useCallback(() => {
     setFilters((prev) => {
       const trimmed = prev.searchText.trim();
@@ -84,7 +97,7 @@ function Home() {
     pointerEvents: showFilters ? "auto" : "none",
   };
 
-  const eventsLabel = loading ? "Loading events…" : `${events.length} event(s) found`;
+  const eventsLabel = loading ? "Loading events…" : `${upcomingEvents.length} event(s) found`;
 
   return (
     <div className="space-y-5">
@@ -95,7 +108,7 @@ function Home() {
           subtitle="Find the best upcoming events and book tickets in seconds"
         />
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          
+
           <div className="flex justify-end gap-3 text-right md:flex-row md:items-center md:gap-4 md:justify-end">
             <div className="text-right text-[0.65rem] uppercase tracking-[0.35em] text-[var(--muted)]">
               % eventsFound
@@ -112,8 +125,8 @@ function Home() {
         </div>
       </div>
       <div className="md:hidden">
-            <PageSearch {...searchProps} className="w-full" />
-          </div>
+        <PageSearch {...searchProps} className="w-full" />
+      </div>
 
       <div
         className="overflow-hidden transition-all duration-500 ease-out"
@@ -126,14 +139,14 @@ function Home() {
 
       {/* Results */}
       <div className="space-y-4">
-        {events.length === 0 && !loading ? (
+        {upcomingEvents.length === 0 && !loading ? (
           <EmptyState
             title="No events match your filters"
             description="Try a different search term or clear the date filter."
           />
         ) : (
           <div className="q-stagger grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {events.map((event: any, index: number) => (
+            {upcomingEvents.map((event: any, index: number) => (
               <div
                 key={event._id}
                 className="q-stagger-item flex"
