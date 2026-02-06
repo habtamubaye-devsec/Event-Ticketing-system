@@ -1,0 +1,21 @@
+# Robots.txt for Qetero Events
+# https://qetero-events.vercel.app/robots.txt
+
+User-agent: *
+
+# Allow public pages
+Allow: /
+Allow: /faq
+Allow: /terms
+Allow: /privacy
+Allow: /login
+Allow: /register
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /profile
+Disallow: /bookings
+Disallow: /reports
+
+# Sitemap location
+Sitemap: https://qetero-events.vercel.app/sitemap.xml
