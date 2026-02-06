@@ -1,37 +1,46 @@
 import PublicContentLayout from "../../layouts/public-content-layout";
 import { Plus, Minus } from "lucide-react";
 import { useState } from "react";
+import SEO from "../../components/SEO";
 
 export default function FAQPage() {
     return (
-        <PublicContentLayout
-            title="Frequently Asked Questions"
-            subtitle="Everything you need to know about Qetero and how it works."
-            category="Support"
-        >
-            <div className="space-y-4 not-prose">
-                <FAQItem
-                    question="How do I create an event on Qetero?"
-                    answer="Creating an event is simple! Just sign up for an organizer account, verify your email, and click 'Create Event' in your dashboard. You'll be guided through setting up details, tickets, and media."
-                />
-                <FAQItem
-                    question="What are the fees for selling tickets?"
-                    answer="We charge a small platform fee of 5% per ticket sold. Free events are completely free to host and list on Qetero."
-                />
-                <FAQItem
-                    question="How do I get paid?"
-                    answer="Payouts are processed automatically to your registered bank account 3-5 business days after your event concludes successfully."
-                />
-                <FAQItem
-                    question="Can I refund a ticket?"
-                    answer="Yes, as an organizer you have full control to issue refunds through your dashboard. Users can also request refunds subject to your specific event policy."
-                />
-                <FAQItem
-                    question="Is there a mobile app?"
-                    answer="We are currently mobile-responsive web-first, but native iOS and Android apps are on our roadmap for late 2024!"
-                />
-            </div>
-        </PublicContentLayout>
+        <>
+            <SEO
+                title="FAQ - Frequently Asked Questions"
+                description="Find answers to common questions about Qetero Events. Learn about creating events, ticket sales, fees, refunds, and more."
+                keywords="FAQ, help, support, questions, event ticketing, how to use Qetero"
+                canonicalPath="/faq"
+            />
+            <PublicContentLayout
+                title="Frequently Asked Questions"
+                subtitle="Everything you need to know about Qetero and how it works."
+                category="Support"
+            >
+                <div className="space-y-4 not-prose">
+                    <FAQItem
+                        question="How do I create an event on Qetero?"
+                        answer="Creating an event is simple! Just sign up for an organizer account, verify your email, and click 'Create Event' in your dashboard. You'll be guided through setting up details, tickets, and media."
+                    />
+                    <FAQItem
+                        question="What are the fees for selling tickets?"
+                        answer="We charge a small platform fee of 5% per ticket sold. Free events are completely free to host and list on Qetero."
+                    />
+                    <FAQItem
+                        question="How do I get paid?"
+                        answer="Payouts are processed automatically to your registered bank account 3-5 business days after your event concludes successfully."
+                    />
+                    <FAQItem
+                        question="Can I refund a ticket?"
+                        answer="Yes, as an organizer you have full control to issue refunds through your dashboard. Users can also request refunds subject to your specific event policy."
+                    />
+                    <FAQItem
+                        question="Is there a mobile app?"
+                        answer="We are currently mobile-responsive web-first, but native iOS and Android apps are on our roadmap for late 2024!"
+                    />
+                </div>
+            </PublicContentLayout>
+        </>
     );
 }
 
