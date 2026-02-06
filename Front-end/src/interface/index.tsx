@@ -18,6 +18,8 @@ export interface EventType {
   date: string;
   time: string;
   media: string[];
+  status?: string;
+  createdAt?: string;
   ticketTypes: {
     name: string;
     price: number;

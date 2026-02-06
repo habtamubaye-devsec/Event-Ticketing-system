@@ -27,7 +27,7 @@ function EventsPage() {
   const deleteEventHandler = async (id: string) => {
     try {
       setLoading(true);
-      await deleteEvents(id);
+      await deleteEvents({}, id);
       message.success("Event Deleted Successfully");
       getData();
     } catch {
