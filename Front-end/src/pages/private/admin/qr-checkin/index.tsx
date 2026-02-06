@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, message, Modal, Select, Tag } from "antd";
+import { Button, message, Modal, Select, Table, Tabs, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { Html5Qrcode } from "html5-qrcode";
 import PageTitle from "../../../../components/pageTitle";
-import { checkInBookingByQr, verifyBookingByQr } from "../../../../api-services/booking-service";
+import {
+  checkInBookingByQr,
+  getAllBooking,
+  verifyBookingByQr,
+} from "../../../../api-services/booking-service";
 import { getEvents } from "../../../../api-services/events-service";
-import type { EventType } from "../../../../interface";
+import type { BookingType, EventType } from "../../../../interface";
+import { getDateTimeFormat } from "../../../../helper";
 
 type VerifyData = {
   _id: string;
@@ -17,6 +23,26 @@ type VerifyData = {
   user?: { name?: string; email?: string };
   event?: { _id?: string; name?: string; date?: string; time?: string; address?: string; city?: string };
 };
+
+type BookingRow = BookingType & {
+  ticketType?: string;
+  ticketCount?: number;
+  status?: string;
+};
+
+function getErrorMessage(error: unknown): string {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const maybe = error as {
+      message?: unknown;
+      response?: { data?: { message?: unknown } };
+    };
+    const respMsg = maybe.response?.data?.message;
+    if (typeof respMsg === "string" && respMsg) return respMsg;
+    if (typeof maybe.message === "string" && maybe.message) return maybe.message;
+  }
+  return "Something went wrong";
+}
 
 function parseLocalDate(dateText?: string) {
   if (!dateText || typeof dateText !== "string") return null;
@@ -41,6 +67,8 @@ function AdminQrCheckin() {
   const [verifyResult, setVerifyResult] = useState<VerifyData | null>(null);
   const [events, setEvents] = useState<EventType[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [eventBookings, setEventBookings] = useState<BookingRow[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
 
   const scannerRegionId = useMemo(() => "qr-scanner-region", []);
 
@@ -61,6 +89,41 @@ function AdminQrCheckin() {
     };
     loadEvents();
   }, []);
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      if (!selectedEventId) {
+        setEventBookings([]);
+        return;
+      }
+      try {
+        setBookingsLoading(true);
+        const resp = await getAllBooking();
+        const list = (resp?.data as BookingRow[] | undefined) ?? [];
+        setEventBookings(
+          list.filter(
+            (b) => String((b.event as { _id?: string } | undefined)?._id) === String(selectedEventId)
+          )
+        );
+      } catch (error: unknown) {
+        message.error(getErrorMessage(error));
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+
+    loadBookings();
+  }, [selectedEventId]);
+
+  const notCheckedInBookings = useMemo(
+    () => eventBookings.filter((b) => (b.status ?? "booked") === "booked" && !b.checkedIn),
+    [eventBookings]
+  );
+
+  const checkedInBookings = useMemo(
+    () => eventBookings.filter((b) => b.checkedIn || b.status === "checked-in"),
+    [eventBookings]
+  );
 
   useEffect(() => {
     if (!scannerOpen) return;
@@ -138,13 +201,145 @@ function AdminQrCheckin() {
     }
   };
 
+  const handleManualCheckIn = async (record: BookingRow) => {
+    const code = record.qrCode;
+    if (!selectedEventId) {
+      message.warning("Select an event first");
+      return;
+    }
+    if (!code) {
+      message.error("Booking code not available for this attendee");
+      return;
+    }
+
+    try {
+      setBookingsLoading(true);
+      await checkInBookingByQr(code, selectedEventId);
+      message.success("Checked in successfully");
+      // refresh list for this event
+      const resp = await getAllBooking();
+      const list = (resp?.data as BookingRow[] | undefined) ?? [];
+      setEventBookings(
+        list.filter(
+          (b) => String((b.event as { _id?: string } | undefined)?._id) === String(selectedEventId)
+        )
+      );
+    } catch (error: unknown) {
+      message.error(getErrorMessage(error));
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
+  const attendeeColumns: ColumnsType<BookingRow> = [
+    {
+      title: "Attendee",
+      dataIndex: "user",
+      key: "user",
+      render: (user: unknown, record: BookingRow) => {
+        const u = (user as { name?: string; email?: string } | null) ?? null;
+        const code = record.qrCode ?? "";
+        return (
+          <div className="space-y-1">
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+              {u?.name || "Attendee"}
+            </p>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              {u?.email ? `${u.email} • ` : ""}
+              {code}
+            </p>
+          </div>
+        );
+      },
+      sorter: (a, b) => {
+        const aName = ((a.user as { name?: string } | undefined)?.name ?? "").toLowerCase();
+        const bName = ((b.user as { name?: string } | undefined)?.name ?? "").toLowerCase();
+        return aName.localeCompare(bName);
+      },
+    },
+    {
+      title: "Ticket",
+      dataIndex: "ticketType",
+      key: "ticketType",
+      responsive: ["md"],
+      render: (_t: unknown, record: BookingRow) => {
+        const type = record.ticketType ?? "-";
+        const count = record.ticketCount ?? 0;
+        return `${type} • ${count}`;
+      },
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: unknown, record: BookingRow) => {
+        const normalizedStatus = record.checkedIn ? "checked-in" : (typeof status === "string" ? status : "");
+        const isBooked = normalizedStatus === "booked";
+        const isCheckedIn = normalizedStatus === "checked-in";
+        const isCanceled = normalizedStatus === "canceled";
+        const color = isCheckedIn ? "processing" : isBooked ? "success" : isCanceled ? "default" : "default";
+        return <Tag color={color}>{(normalizedStatus || "unknown").toUpperCase()}</Tag>;
+      },
+      responsive: ["sm"],
+    },
+    {
+      title: "Booked On",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      responsive: ["lg"],
+      render: (createdAt: string) => getDateTimeFormat(createdAt),
+      sorter: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    },
+  ];
+
+  const notCheckedColumns: ColumnsType<BookingRow> = [
+    ...attendeeColumns,
+    {
+      title: "Action",
+      key: "action",
+      render: (_value: unknown, record: BookingRow) => {
+        const isCheckedIn = Boolean(record.checkedIn) || record.status === "checked-in";
+        const canCheckIn = !isCheckedIn && (record.status ?? "booked") === "booked";
+        return canCheckIn ? (
+          <Button size="small" type="primary" onClick={() => handleManualCheckIn(record)}>
+            Check in
+          </Button>
+        ) : (
+          <span className="text-(--muted) text-sm">—</span>
+        );
+      },
+    },
+  ];
+
+  const checkedColumns: ColumnsType<BookingRow> = [
+    ...attendeeColumns,
+    {
+      title: "Checked-in At",
+      dataIndex: "checkedInAt",
+      key: "checkedInAt",
+      responsive: ["lg"],
+      render: (checkedInAt: string | undefined, record: BookingRow) => {
+        const value = checkedInAt || record.checkedInAt;
+        return value ? getDateTimeFormat(value) : "-";
+      },
+      sorter: (a, b) => {
+        const aTime = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0;
+        const bTime = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0;
+        return aTime - bTime;
+      },
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <PageTitle title="QR Check-in" />
 
       <div className="q-card p-5 space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[260px] flex-1">
+            <p className="text-[0.65rem] uppercase tracking-[0.35em] text-[var(--muted)]">
+              Only upcoming events are shown
+            </p>
             <Select
               value={selectedEventId || undefined}
               onChange={(value) => {
@@ -163,9 +358,6 @@ function AdminQrCheckin() {
                 (option?.label as string | undefined)?.toLowerCase().includes(input.toLowerCase()) ?? false
               }
             />
-            <p className="mt-1 text-[0.65rem] uppercase tracking-[0.35em] text-[var(--muted)]">
-              Only upcoming events are shown
-            </p>
           </div>
           <Button type="primary" onClick={() => setScannerOpen(true)}>
             Scan QR
@@ -213,6 +405,54 @@ function AdminQrCheckin() {
           </div>
         ) : null}
       </div>
+
+      {selectedEventId ? (
+        <div className="q-card p-5 space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-bold text-[var(--text)]">Attendees</p>
+              <p className="text-xs text-[var(--muted)]">Showing bookings for selected event</p>
+            </div>
+            <div className="text-xs text-[var(--muted)]">
+              Total: <span className="text-[var(--text)] font-semibold">{eventBookings.length}</span>
+            </div>
+          </div>
+
+          <Tabs
+            defaultActiveKey="not-checked"
+            items={[
+              {
+                key: "not-checked",
+                label: `Not Checked In (${notCheckedInBookings.length})`,
+                children: (
+                  <Table
+                    dataSource={notCheckedInBookings}
+                    columns={notCheckedColumns}
+                    loading={bookingsLoading}
+                    rowKey="_id"
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: "max-content" }}
+                  />
+                ),
+              },
+              {
+                key: "checked",
+                label: `Checked In (${checkedInBookings.length})`,
+                children: (
+                  <Table
+                    dataSource={checkedInBookings}
+                    columns={checkedColumns}
+                    loading={bookingsLoading}
+                    rowKey="_id"
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: "max-content" }}
+                  />
+                ),
+              },
+            ]}
+          />
+        </div>
+      ) : null}
 
       <Modal open={scannerOpen} onCancel={() => setScannerOpen(false)} footer={null} title="Scan QR" centered>
         <div className="rounded-2xl overflow-hidden border border-[var(--border)] bg-black">

@@ -20,6 +20,7 @@ const knownRoutes = new Set([
   "/reports",
   "/profile",
   "/admin/bookings",
+  "/admin/qr-checkin",
   "/admin/users",
   "/admin/reports",
   "/admin/events",
